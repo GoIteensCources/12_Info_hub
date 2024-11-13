@@ -1,0 +1,6 @@
+
+class Article():
+    ...
+
+class Comments():
+    ...
