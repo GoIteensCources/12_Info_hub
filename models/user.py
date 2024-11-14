@@ -29,7 +29,7 @@ class User(Base):
     role: Mapped[UserType] = mapped_column(default=UserType.USER)
     bio: Mapped[str] = mapped_column(nullable=True)
 
-    create_date: Mapped[datetime] = mapped_column(default=func.now())
+    create_date: Mapped[datetime] = mapped_column(server_default=func.now())
 
     articles = relationship(
         'Article',

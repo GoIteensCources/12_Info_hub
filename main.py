@@ -4,7 +4,8 @@ from fastapi.responses import RedirectResponse
 
 from routes import user_route, article_route, auth_route
 
-app = FastAPI()
+app = FastAPI(description="",
+              version="0.1")
 
 
 @app.get("/", include_in_schema=False)

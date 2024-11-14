@@ -3,6 +3,8 @@ from datetime import datetime
 from pydantic import BaseModel, Field, EmailStr, model_validator, ConfigDict
 import enum
 
+from schemas.article import SchArticle
+
 
 class UserType(str, enum.Enum):
     USER = "user"
@@ -14,8 +16,6 @@ class InputUserData(BaseModel):
     email: EmailStr
     password: str = Field(min_length=6)
     password_repeat: str = Field(min_length=6)
-
-    bio: Optional[str] = Field(None)
     role: UserType = UserType.USER
 
     @model_validator(mode="after")
@@ -29,6 +29,7 @@ class InputUserData(BaseModel):
 class UserBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: int
     username: str
     email: EmailStr
     role: UserType = UserType.USER
@@ -44,10 +45,15 @@ class ListBaseUsers(BaseModel):
 
 class InputUpdateUser(BaseModel):
     username: Optional[str] = Field(None)
-    bio: Optional[str] = Field(None)
+    bio: Optional[str] = None
 
 
 class OutUserName(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     username: str
+
+class FullUserBase(UserBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    articles: SchArticle

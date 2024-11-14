@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas import InputUserData, ListBaseUsers, OutUser, UpdateUser
+from schemas.user import InputUserData, ListBaseUsers, InputUpdateUser, OutUserName, UserBase
 
 from models.user import User
 from settings import get_session
@@ -13,7 +13,7 @@ route = APIRouter()
 
 @route.post("/")
 async def registration(data_user: InputUserData,
-                       session: AsyncSession = Depends(get_session)) -> OutUser:
+                       session: AsyncSession = Depends(get_session)) -> UserBase:
     stmt = select(User).filter_by(email=data_user.email)
     user = await session.scalar(stmt)
     if user:
@@ -30,10 +30,10 @@ async def registration(data_user: InputUserData,
     await session.commit()
     await session.refresh(new_user)
 
-    return OutUser.model_validate(new_user)
+    return UserBase.model_validate(new_user)
 
 
-@route.get("/account/all/")
+@route.get("/read_all/")
 async def get_all_users(session: AsyncSession = Depends(get_session),
                         _=Depends(get_current_admin)) -> ListBaseUsers:
     users = await session.scalars(select(User))
@@ -41,15 +41,15 @@ async def get_all_users(session: AsyncSession = Depends(get_session),
     return ListBaseUsers(users=users, count_users=count)
 
 
-@route.get("/account/")
-async def account_current_user(current_user=Depends(get_current_user)) -> OutUser:
-    return OutUser.model_validate(current_user)
+@route.get("/read_current_user/")
+async def account_current_user(current_user=Depends(get_current_user)) -> UserBase:
+    return UserBase.model_validate(current_user)
 
 
 @route.put("/")
-async def change_by_id(data: UpdateUser,
+async def change_by_id(data: InputUpdateUser,
                        current_user=Depends(get_current_user),
-                       session: AsyncSession = Depends(get_session)) -> OutUser:
+                       session: AsyncSession = Depends(get_session)) -> UserBase:
     if data.username:
         current_user.username = data.username
     if data.bio:
@@ -57,7 +57,7 @@ async def change_by_id(data: UpdateUser,
 
     await session.commit()
     await session.refresh(current_user)
-    return OutUser.model_validate(current_user)
+    return UserBase.model_validate(current_user)
 
 
 async def drop_user():

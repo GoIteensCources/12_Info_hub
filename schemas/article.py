@@ -3,28 +3,6 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, EmailStr, HttpUrl, model_validator, ConfigDict
 
-from schemas import UserBase
-
-
-# class Author():
-#     name: str
-#     email: EmailStr
-#     bio: Optional[str] = None
-#
-#
-# class Article():
-#     title: str
-#     content: str
-#     author: Author
-#     tags: Optional[list[str]] = []
-#     published_at: datetime = Field(default_factory=datetime.now)
-#
-#
-# class CommentBase(BaseModel):
-#     author_name: str
-#     content: str
-#     created_at: datetime = Field(default_factory=datetime.now)
-
 
 class InputArticle(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -40,15 +18,25 @@ class InputComment(BaseModel):
     content: str
 
 
+class OutUserName(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    username: str
+
+
 class SchComment(InputComment):
     model_config = ConfigDict(from_attributes=True)
-    ...
+
+    created_at: datetime
+    author: OutUserName
 
 
 class SchArticle(InputArticle):
     model_config = ConfigDict(from_attributes=True)
 
-    ...
+    published_at: datetime
+    comments: list[SchComment]
+    author: OutUserName
 
 
 class SchListArticles(BaseModel):
