@@ -1,18 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas.user import *
+from schemas.user import InputUserData, ListBaseUsers, InputUpdateUser, OutUserName, UserBase, FullUserBase
 
-from sqlalchemy import func, select
-from models import User
+from models.user import User
 from settings import get_session
 from werkzeug.security import generate_password_hash
+from routes.auth import get_current_admin, get_current_user
 
 route = APIRouter()
 
 
 @route.post("/")
-async def regestration_user(data_user: InputUserData,
-                            session: AsyncSession = Depends(get_session)) -> UserBase:
+async def registration(data_user: InputUserData,
+                       session: AsyncSession = Depends(get_session)) -> UserBase:
+    stmt = select(User).filter_by(email=data_user.email)
+    user = await session.scalar(stmt)
+    if user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User is exists")
+
     user_dict = data_user.model_dump()
     user_dict["password_hash"] = generate_password_hash(user_dict["password"])
     del user_dict["password_repeat"]
@@ -27,29 +33,28 @@ async def regestration_user(data_user: InputUserData,
     return UserBase.model_validate(new_user)
 
 
-@route.get("/{id_user}")
-async def get_by_id(id_user: int, session: AsyncSession = Depends(get_session)) -> FullUserBase | UserBase:
-    user = await session.get(User, id_user)
-    if not user:
-        raise HTTPException(404, f"User {id_user} not found")
-    details_user = user.user_details
-    if details_user:
-        return FullUserBase.model_validate(user)
-    return UserBase.model_validate(user)
-
-
-@route.get("/read/all/")
-async def get_all_users(session: AsyncSession = Depends(get_session)) -> ListBaseUsers:
+@route.get("/read_all/")
+async def get_all_users(session: AsyncSession = Depends(get_session),
+                        _=Depends(get_current_admin)) -> ListBaseUsers:
     users = await session.scalars(select(User))
     count = await session.scalar(select(func.count()).select_from(User))
     return ListBaseUsers(users=users, count_users=count)
 
 
-@route.delete("/{id_user}", status_code=200)
-async def delete_user(id_user: int, session: AsyncSession = Depends(get_session)):
-    user = await session.get(User, id_user)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    await session.delete(user)
+@route.get("/read_current_user/")
+async def account_current_user(current_user=Depends(get_current_user)) -> UserBase:
+    return UserBase.model_validate(current_user)
+
+
+@route.put("/")
+async def change_by_id(data: InputUpdateUser,
+                       current_user=Depends(get_current_user),
+                       session: AsyncSession = Depends(get_session)) -> OutUserName:
+    if data.username:
+        current_user.username = data.username
+    if data.bio:
+        current_user.bio = data.bio
+
     await session.commit()
-    return {"mess": f"{id_user} deleted"}
+    await session.refresh(current_user)
+    return OutUserName.model_validate(current_user)
