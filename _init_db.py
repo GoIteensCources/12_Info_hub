@@ -3,7 +3,7 @@ import asyncio
 from werkzeug.security import generate_password_hash
 
 from settings import Base, async_session, engine
-from models.users import User, UserDetails
+from models.user import User
 from schemas import UserTypeEnum
 
 
@@ -20,8 +20,6 @@ async def insert_data():
                   password=generate_password_hash("admin"),
                   user_role=UserTypeEnum.ADMIN)
         u2 = User(name="user", email="user@ex.com", password=generate_password_hash("user"), user_role=UserTypeEnum.USER)
-
-
 
         sess.add_all([u1, u2])
         await sess.commit()
