@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas import InputUserData, ListBaseUsers, OutUser, UpdateUser
+from schemas import InputUserData, ListBaseUsers, OutUserName, InputUpdateUser
 
 from models.user import User
 from settings import get_session
@@ -13,7 +13,7 @@ route = APIRouter()
 
 @route.post("/")
 async def registration(data_user: InputUserData,
-                       session: AsyncSession = Depends(get_session)) -> OutUser:
+                       session: AsyncSession = Depends(get_session)) -> OutUserName:
     stmt = select(User).filter_by(email=data_user.email)
     user = await session.scalar(stmt)
     if user:
@@ -30,7 +30,7 @@ async def registration(data_user: InputUserData,
     await session.commit()
     await session.refresh(new_user)
 
-    return OutUser.model_validate(new_user)
+    return OutUserName.model_validate(new_user)
 
 
 @route.get("/account/all/")
@@ -42,14 +42,14 @@ async def get_all_users(session: AsyncSession = Depends(get_session),
 
 
 @route.get("/account/")
-async def account_current_user(current_user=Depends(get_current_user)) -> OutUser:
-    return OutUser.model_validate(current_user)
+async def account_current_user(current_user=Depends(get_current_user)) -> OutUserName:
+    return OutUserName.model_validate(current_user)
 
 
 @route.put("/")
-async def change_by_id(data: UpdateUser,
+async def change_by_id(data: InputUpdateUser,
                        current_user=Depends(get_current_user),
-                       session: AsyncSession = Depends(get_session)) -> OutUser:
+                       session: AsyncSession = Depends(get_session)) -> OutUserName:
     if data.username:
         current_user.username = data.username
     if data.bio:
@@ -57,7 +57,7 @@ async def change_by_id(data: UpdateUser,
 
     await session.commit()
     await session.refresh(current_user)
-    return OutUser.model_validate(current_user)
+    return OutUserName.model_validate(current_user)
 
 
 async def drop_user():

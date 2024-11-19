@@ -48,7 +48,9 @@ class SchComment(InputComment):
 class SchArticle(InputArticle):
     model_config = ConfigDict(from_attributes=True)
 
-    ...
+    id: int
+    tags: list = Field(default=[])
+    published_at: datetime
 
 
 class SchListArticles(BaseModel):
