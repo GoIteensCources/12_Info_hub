@@ -53,7 +53,7 @@ async def create_comment(content: str, article_id: int, current_user: User = Dep
     return InputComment.model_validate(new_comment)
 
 
-@route.post("/delete_comment/")
+@route.delete("/comment/")
 async def delete_comment(comment_id: int, session: AsyncSession = Depends(get_session)
                          ):
     result = await session.execute(select(Comment).filter(Comment.id == comment_id))
