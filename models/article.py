@@ -10,8 +10,8 @@ class Article(Base):
     __tablename__ = "articles"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(unique=True, nullable=False)
-    content: Mapped[str] = mapped_column(nullable=False)
+    title: Mapped[str] = mapped_column(unique=True, nullable=False, index=True)
+    content: Mapped[str] = mapped_column(nullable=False, index=True)
     tags: Mapped[list[str]] = mapped_column(JSON, nullable=True)
 
     published_at: Mapped[datetime] = mapped_column(server_default=func.now())

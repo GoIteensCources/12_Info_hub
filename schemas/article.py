@@ -14,8 +14,10 @@ class InputArticle(BaseModel):
 
 class InputComment(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
+    id: int
     content: str
+    article_id: int
+    user_id: int
 
 
 class OutUserName(BaseModel):
@@ -40,4 +42,7 @@ class SchArticle(InputArticle):
 
 
 class SchListArticles(BaseModel):
-    ...
+    model_config = ConfigDict(from_attributes=True)
+
+    articles: list[SchArticle] = []
+    count: int = 0
