@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import session
 from starlette import status
 from sqlalchemy import select
+from fastapi.responses import JSONResponse
+
 from models import Comment, User, Article
 from routes.auth import get_current_user
 from schemas import InputComment
@@ -48,23 +50,23 @@ async def create_comment(content: str, article_id: int, current_user: User = Dep
     session.add(new_comment)
     await session.commit()
     await session.refresh(new_comment)
-    return InputComment.from_orm(new_comment)
+    return InputComment.model_validate(new_comment)
 
 
 @route.post("/delete_comment/")
 async def delete_comment(comment_id: int, session: AsyncSession = Depends(get_session)
                          ):
     result = await session.execute(select(Comment).filter(Comment.id == comment_id))
+
     comment = result.scalars().first()
 
     if comment:
         await session.delete(comment)
         await session.commit()
-        return f"Comment {comment_id} успішно видалений."
+        return JSONResponse(content={"message": f"Comment {comment_id} успішно видалений."}, status_code=200)
     else:
-        raise ValueError(f"Comment {comment_id} незнайдено.")
+        JSONResponse(content={"message": f"Comment {comment_id} незнайдено."}, status_code=400)
 
 
 async def search():
-
- ...
+    ...

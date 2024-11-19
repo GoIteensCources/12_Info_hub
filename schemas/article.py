@@ -35,13 +35,13 @@ class InputArticle(BaseModel):
 
 
 class InputComment(BaseModel):
-
+    model_config = ConfigDict(from_attributes=True)
     id: int
     content: str
     article_id: int
     user_id: int
 
-    model_config = {"from_attributes": True}
+
 
 
 class SchComment(InputComment):
