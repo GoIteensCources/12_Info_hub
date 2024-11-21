@@ -39,7 +39,7 @@ async def create_article(article: InputArticle,
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Помилка при створенні статті")
 
-
+#****************************************
 @route.get("/{article_id}")
 async def get_article_by_id(article_id: int,
                             session: AsyncSession = Depends(get_session)) -> SchArticle:
@@ -66,7 +66,7 @@ async def all_articles(
     if not articles:
         raise HTTPException(status_code=404, detail="Статті відсутні.")
     return SchListArticles(articles=articles, count=total_count)
-
+#****************************************
 
 @route.put('/{article_id}')
 async def change_article(article_id: int,
